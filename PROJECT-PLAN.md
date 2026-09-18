@@ -186,8 +186,7 @@ Ruthless priority order if you get fewer hours than planned:
 Stages 4 and 6 are where to spend a half-day rather than a full one. Skipping Stage 1 or 5 to make
 room for anything else is the wrong trade.
 
-## After the sprint (credit runs to 2026-11-01)
-
+## After the sprint 
 Don't tear it down on day 8 — you have ~8 more weeks of runway. In rough value order:
 **HA control plane** (3 control-plane nodes, stacked etcd, kube-vip for the endpoint — this is
 the biggest remaining bare-metal gap), then a real CI/CD pipeline building and deploying to the
