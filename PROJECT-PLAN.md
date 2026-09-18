@@ -1,13 +1,11 @@
 # Project Plan — Bare-Metal-Style Kubernetes on Akamai Cloud
 
-**Goal:** be able to sit in a hands-on technical screen for the AHEAD Kubernetes Infrastructure
-Engineer role (Job ID AHD2026704630) and demonstrate, from memory and from artifacts, that you have
-personally built and operated a Kubernetes cluster from scratch on Linux nodes with no managed
-control plane and no cloud primitives.
+**Goal:** demonstrate, from memory and from artifacts, personally built and operated experience with
+a Kubernetes cluster built from scratch on Linux nodes — no managed control plane, no cloud
+primitives — the kind of hands-on depth that's easy to lose track of once you're running an
+infrastructure org instead of typing the commands yourself.
 
 **Timeline:** 7 days, intense (~28 hrs). **Budget:** ~$0.08/hr, credit expires 2026-11-01.
-
-Gap reasoning behind the stage ordering: [`docs/gap-analysis.md`](docs/gap-analysis.md).
 
 ---
 
@@ -15,10 +13,10 @@ Gap reasoning behind the stage ordering: [`docs/gap-analysis.md`](docs/gap-analy
 
 **Use plain Linode Compute Instances and kubeadm. Do not use LKE.**
 
-The JD's differentiator is *"bare-metal Kubernetes deployments (as opposed to managed cloud
-services)"*. LKE would hand you a control plane you did not build, which proves nothing this role
-is asking about. Worse, an LKE-shaped answer in the interview signals the exact cloud reflex the
-client is screening against.
+Bare-metal-style deployment — as opposed to a managed cloud service — is the entire point of this
+exercise. LKE would hand you a control plane you did not build, which proves nothing about your own
+hands-on ability. Worse, reaching for cloud-managed primitives out of habit is exactly the reflex
+this lab exists to unlearn.
 
 So the lab deliberately amputates the cloud primitives an on-prem cluster does not have:
 
@@ -87,8 +85,8 @@ Install **one minor version behind current stable** on purpose — that is what 
 upgrade to perform in Stage 5. Check what's current at `pkgs.k8s.io` rather than trusting a
 version number written down last month.
 
-Then `kubeadm init` bound to the VLAN address, install **Calico** (the JD names it), join both
-workers, and confirm the control plane. Read `/etc/kubernetes/manifests/` and understand that the
+Then `kubeadm init` bound to the VLAN address, install **Calico**, join both workers, and confirm
+the control plane. Read `/etc/kubernetes/manifests/` and understand that the
 apiserver, scheduler, controller-manager, and etcd are static pods on disk.
 
 > **Proof:** `kubectl get nodes` — three `Ready`. All core pods running.
@@ -165,16 +163,13 @@ writing down symptom → diagnosis → fix each time:
 > hours in the whole plan.
 
 ### Stage 7 — Documentation and narrative · ~2-3 hrs
-Your NetApp TME and Red Hat PM background makes this the cheapest stage to do well, and the JD
-explicitly lists documentation and runbooks. Write the top-level `README.md` (architecture diagram,
-what's deployed, why no cloud primitives), clean up the runbooks, and draft
-`docs/interview-demo.md` — a 10-minute walkthrough script, mirroring what you already did for
-`llm-serving-lab`.
+Your NetApp TME and Red Hat PM background makes this the cheapest stage to do well — documentation
+and runbooks are a real strength, worth showing off rather than treating as an afterthought. Write
+the top-level `README.md` (architecture diagram, what's deployed, why no cloud primitives), clean
+up the runbooks, and draft `docs/interview-demo.md` — a 10-minute walkthrough script, mirroring
+what you already did for `llm-serving-lab`.
 
-Also: reconcile the Applewhite IT bullets in the AHEAD resume against what you actually built, and
-adjust any that this lab didn't cover.
-
-> **Proof:** a repo you can send the recruiter.
+> **Proof:** a repo worth sharing on its own merits.
 
 ---
 
@@ -182,10 +177,10 @@ adjust any that this lab didn't cover.
 
 Ruthless priority order if you get fewer hours than planned:
 
-1. **Stage 1** (bootstrap) — non-negotiable, it is the literal must-have on the JD
+1. **Stage 1** (bootstrap) — non-negotiable, it's the foundation everything else sits on
 2. **Stage 5** (upgrade + etcd restore) — the deepest questions come from here
 3. **Stage 2** (CNI + MetalLB) — the bare-metal networking differentiator
-4. **Stage 3** (NFS + local PV) — named explicitly in the JD
+4. **Stage 3** (NFS + local PV) — the bare-metal storage differentiator
 5. Stage 6 break/fix, then Stage 4, then Stage 7
 
 Stages 4 and 6 are where to spend a half-day rather than a full one. Skipping Stage 1 or 5 to make

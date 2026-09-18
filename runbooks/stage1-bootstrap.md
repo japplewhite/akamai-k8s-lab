@@ -74,8 +74,8 @@ Ready until pod networking exists.
 
 ## 4. Inspect the static pods
 
-This is the thing to actually look at, not skip past — it's where "control plane components" on
-the JD stops being an abstraction:
+This is the thing to actually look at, not skip past — it's where "control plane components"
+stops being an abstraction:
 
 ```bash
 ls /etc/kubernetes/manifests/

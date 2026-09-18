@@ -80,8 +80,8 @@ taking "control plane" as an abstraction; those four YAML files *are* the contro
 From there:
 
 1. **Calico** goes in via its operator (`tigera-operator` + a custom `Installation` resource) for
-   pod networking — the JD I'm building this against names Calico specifically, since it's the CNI
-   most associated with real on-prem, BGP-capable deployments rather than pure cloud setups.
+   pod networking — it's the CNI most associated with real on-prem, BGP-capable deployments rather
+   than pure cloud setups, which made it the obvious pick here.
 2. The two workers join with the token `kubeadm init` prints out — a detail that matters more than
    it looks, since that token expires in 24 hours, and regenerating one mid-project the first time
    is a useful thing to have already done before an interviewer asks about it.

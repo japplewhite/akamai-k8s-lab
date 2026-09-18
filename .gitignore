@@ -1,6 +1,9 @@
 # Third-party PII — the recruiter's real contact info, never belongs in a public repo
 email.txt
 
+# Private career-planning artifact — built around one specific job application, kept local only
+docs/gap-analysis.md
+
 # Cluster-specific artifacts — regenerated per build, not meant to be version controlled
 ca.crt
 *.key

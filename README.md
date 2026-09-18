@@ -5,15 +5,15 @@ deliberately configured **without** cloud primitives — no managed control plan
 controller manager, no cloud load balancer, no cloud CSI — so it behaves like an on-premises
 bare-metal cluster.
 
-Built to close the hands-on gaps for the AHEAD Kubernetes Infrastructure Engineer role
-(see [`docs/gap-analysis.md`](docs/gap-analysis.md)).
+Built as a hands-on skills refresher: bare-metal-style Kubernetes has a lot of sharp edges a
+managed control plane normally files off, and the only way back to fluency with them is doing the
+build yourself.
 
 ## Start here
 
 | Document | What's in it |
 |---|---|
 | [`PROJECT-PLAN.md`](PROJECT-PLAN.md) | The 7-day plan: design rationale, cluster footprint, costs, 8 stages with proofs |
-| [`docs/gap-analysis.md`](docs/gap-analysis.md) | JD requirement → existing evidence → gap → stage that closes it |
 | [`scripts/`](scripts/) | `provision.sh`, `destroy.sh`, `node-prep.sh` — drafts; making them work is Stage 0 |
 | `runbooks/` | Written during Stages 5-7: upgrade, etcd restore, node add/remove, troubleshooting |
 | `manifests/` | Calico, MetalLB, ingress-nginx, storage classes, test workloads |
