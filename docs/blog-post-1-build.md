@@ -119,7 +119,7 @@ Every one of these is now a paragraph in a runbook instead of a mystery, which w
 all along — not a cluster that happened to come up clean, but a set of failures I've personally
 diagnosed and fixed.
 
-## Coming in part 2
+## Coming in part 2..
 
 The cluster is up, networked, and has real storage. That's necessary but not sufficient — a
 cluster you've only ever seen work isn't one you actually know. Part 2 covers what comes next:
