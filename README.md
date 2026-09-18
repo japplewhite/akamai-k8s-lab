@@ -15,7 +15,7 @@ build yourself.
 |---|---|
 | [`PROJECT-PLAN.md`](PROJECT-PLAN.md) | The 7-day plan: design rationale, cluster footprint, costs, 8 stages with proofs |
 | [`scripts/`](scripts/) | `provision.sh`, `destroy.sh`, `node-prep.sh` — drafts; making them work is Stage 0 |
-| `runbooks/` | Written during Stages 5-7: upgrade, etcd restore, node add/remove, troubleshooting |
+| `runbooks/` | Stage-by-stage execution logs: bootstrap, networking, storage, registry/Helm so far |
 | `manifests/` | Calico, MetalLB, ingress-nginx, storage classes, test workloads |
 | `results/` | Break/fix drill logs and evidence |
 
