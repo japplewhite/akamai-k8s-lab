@@ -8,6 +8,7 @@ docs/gap-analysis.md
 ca.crt
 *.key
 *.pem
+*.pki
 
 # macOS
 .DS_Store
