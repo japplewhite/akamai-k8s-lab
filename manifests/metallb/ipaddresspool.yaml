@@ -1,0 +1,9 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: vlan-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 10.10.0.100-10.10.0.120
+  autoAssign: true

@@ -1,0 +1,33 @@
+# Static local PV on k8s-w1. No provisioner watches this StorageClass — you create the PV by
+# hand, which is the point: this is the manual side of the same "persistent storage" concept the
+# NFS provisioner automates. requires /mnt/local-pv to exist on w1 first (see runbook).
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+# WaitForFirstConsumer matters here: local storage is tied to one specific node, so binding must
+# wait until a pod requesting it is actually scheduled — binding immediately (the default) could
+# pick a PV on a node the scheduler later decides NOT to use for the pod, deadlocking it.
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local-pv-w1
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem
+  accessModes: ["ReadWriteOnce"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/local-pv
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values: ["k8s-w1"]

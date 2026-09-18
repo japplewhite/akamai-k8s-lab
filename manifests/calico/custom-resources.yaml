@@ -1,0 +1,24 @@
+# Calico Installation CR, applied after the Tigera operator (see runbooks/stage1-bootstrap.md).
+#
+# cidr here MUST match kubeadm's --pod-network-cidr exactly. Both are set to Calico's own
+# default (192.168.0.0/16) so there's no reason for them to drift — but if you ever change one,
+# change both, in this file and in the kubeadm init command.
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  calicoNetwork:
+    ipPools:
+    - name: default-ipv4-ippool
+      blockSize: 26
+      cidr: 192.168.0.0/16
+      encapsulation: VXLANCrossSubnet
+      natOutgoing: Enabled
+      nodeSelector: all()
+---
+apiVersion: operator.tigera.io/v1
+kind: APIServer
+metadata:
+  name: default
+spec: {}

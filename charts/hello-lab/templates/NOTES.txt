@@ -1,0 +1,6 @@
+{{ include "hello-lab.fullname" . }} deployed — {{ .Values.replicaCount }} replica(s) of
+{{ .Values.image.repository }}:{{ .Values.image.tag }}.
+
+Check it:
+  kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+  kubectl port-forward svc/{{ include "hello-lab.fullname" . }} 8080:{{ .Values.service.port }}

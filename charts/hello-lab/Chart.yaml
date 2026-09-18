@@ -1,0 +1,7 @@
+apiVersion: v2
+name: hello-lab
+description: Minimal chart deploying an image from our own private registry — authored from
+  scratch for Stage 4 of PROJECT-PLAN.md, not installed from someone else's repo.
+type: application
+version: 0.1.0
+appVersion: "1.0"

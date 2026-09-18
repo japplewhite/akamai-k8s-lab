@@ -1,0 +1,54 @@
+# Apply this ONLY after demo-apps.yaml is confirmed reachable through the ingress. Applying it
+# is meant to visibly break something first, then you fix it with the second policy below —
+# that's the actual exercise, not a mistake to avoid.
+#
+# 1. default-deny-ingress blocks ALL inbound traffic to every pod in the namespace, including
+#    from the ingress-nginx controller. Apply just this one first and confirm curl-ing through
+#    the ingress now hangs/fails — that's the expected break.
+# 2. allow-from-ingress-controller re-opens the one path that should legitimately work: traffic
+#    from the ingress-nginx namespace to app-a/app-b on 8080. Uses the automatic
+#    kubernetes.io/metadata.name label every namespace gets since k8s 1.21 — no manual labeling
+#    needed.
+# 3. allow-app-a-to-app-b is a second explicit allow for east-west traffic between the two apps.
+#    A debug pod dropped into `demo` that ISN'T app-a should still be unable to reach app-b —
+#    that negative case is what proves the default-deny is actually doing its job.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: demo
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-ingress-controller
+  namespace: demo
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    ports:
+    - {protocol: TCP, port: 8080}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-a-to-app-b
+  namespace: demo
+spec:
+  podSelector:
+    matchLabels: {app: app-b}
+  policyTypes: ["Ingress"]
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels: {app: app-a}
+    ports:
+    - {protocol: TCP, port: 8080}

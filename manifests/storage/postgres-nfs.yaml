@@ -1,0 +1,52 @@
+# Postgres on NFS-backed dynamic storage. Compare against postgres-local.yaml: this one should
+# survive being rescheduled to EITHER worker node, since the data lives on the NFS server, not
+# on either node's local disk.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-nfs
+  namespace: demo
+spec:
+  clusterIP: None
+  selector: {app: pg-nfs}
+  ports: [{port: 5432}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pg-nfs
+  namespace: demo
+spec:
+  serviceName: pg-nfs
+  replicas: 1
+  selector:
+    matchLabels: {app: pg-nfs}
+  template:
+    metadata:
+      labels: {app: pg-nfs}
+    spec:
+      securityContext:
+        fsGroup: 999   # postgres image's default uid/gid — lets kubelet fix mount ownership
+      containers:
+        - name: postgres
+          image: postgres:17-alpine
+          env:
+            - name: POSTGRES_PASSWORD
+              value: labpassword
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports: [{containerPort: 5432}]
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests: {cpu: "100m", memory: "128Mi"}
+            limits: {memory: "256Mi"}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: nfs-client
+        resources:
+          requests: {storage: 1Gi}

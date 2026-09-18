@@ -1,0 +1,11 @@
+# Third-party PII — the recruiter's real contact info, never belongs in a public repo
+email.txt
+
+# Cluster-specific artifacts — regenerated per build, not meant to be version controlled
+ca.crt
+*.key
+*.pem
+
+# macOS
+.DS_Store
+**/.DS_Store

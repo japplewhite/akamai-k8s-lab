@@ -1,0 +1,54 @@
+# Postgres on the static local PV (k8s-w1 only). Compare against postgres-nfs.yaml: this one
+# can ONLY ever be rescheduled back onto w1 — the PV's nodeAffinity enforces that. If w1 is
+# cordoned/drained/down, this pod stays Pending until it's schedulable on w1 again. That
+# constraint is the actual thing worth being able to explain — it's the tradeoff for local
+# storage's speed.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-local
+  namespace: demo
+spec:
+  clusterIP: None
+  selector: {app: pg-local}
+  ports: [{port: 5432}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pg-local
+  namespace: demo
+spec:
+  serviceName: pg-local
+  replicas: 1
+  selector:
+    matchLabels: {app: pg-local}
+  template:
+    metadata:
+      labels: {app: pg-local}
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: postgres
+          image: postgres:17-alpine
+          env:
+            - name: POSTGRES_PASSWORD
+              value: labpassword
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports: [{containerPort: 5432}]
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests: {cpu: "100m", memory: "128Mi"}
+            limits: {memory: "256Mi"}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-storage
+        resources:
+          requests: {storage: 1Gi}
