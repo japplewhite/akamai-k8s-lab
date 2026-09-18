@@ -152,9 +152,9 @@ short-name-vs-FQDN split, which isolates it to the client's resolver rather than
 war story for the DNS-troubleshooting interview question — don't be thrown by it happening again in
 Stage 6's break/fix drills; it isn't one of the deliberate breaks.
 
-- [ ] all 3 nodes `Ready`
-- [ ] all system pods `Running`
-- [ ] test pod resolves the FQDN and reaches the apiserver ClusterIP
+- [X ] all 3 nodes `Ready`
+- [X] all system pods `Running`
+- [X ] test pod resolves the FQDN and reaches the apiserver ClusterIP
 
 Optional deeper check: `wget -qO- --no-check-certificate https://kubernetes.default.svc.cluster.local:443`
 from inside the pod. Expect a **TLS alert** (e.g. `alert code 47 / illegal_parameter`) rather than a
