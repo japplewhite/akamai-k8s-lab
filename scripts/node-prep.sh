@@ -35,12 +35,18 @@ net.ipv4.ip_forward                 = 1
 EOF
 sysctl --system >/dev/null
 
-echo "== containerd + crictl (the CLI you'll actually use to inspect containers — no docker here)"
+echo "== containerd (no docker here) + nfs-common"
 apt-get update -qq
-apt-get install -y -qq containerd cri-tools nfs-common apt-transport-https ca-certificates curl gpg
+apt-get install -y -qq containerd nfs-common apt-transport-https ca-certificates curl gpg
 # nfs-common provides mount.nfs — without it, kubelet's NFS volume mounts fail with a cryptic
 # "bad option; you might need a /sbin/mount.<type> helper program" error on any pod using an
 # NFS-backed PV, with no indication the real problem is a missing package on the node.
+#
+# crictl (cri-tools) is installed further down, AFTER the pkgs.k8s.io repo is configured — it's
+# NOT an Ubuntu package (not in main/universe/multiverse/backports), it ships from the same
+# Kubernetes community repo as kubelet/kubeadm/kubectl. Installing it here, before that repo
+# exists, fails with "E: Unable to locate package cri-tools" on any node that hasn't already had
+# the repo configured some other way.
 
 mkdir -p /etc/containerd
 containerd config default >/etc/containerd/config.toml
@@ -54,15 +60,18 @@ grep -q 'SystemdCgroup = true' /etc/containerd/config.toml || {
 systemctl restart containerd
 systemctl enable containerd
 
-echo "== kubelet, kubeadm, kubectl (v${K8S_MINOR})"
+echo "== kubelet, kubeadm, kubectl, crictl (v${K8S_MINOR})"
 mkdir -p /etc/apt/keyrings
 curl -fsSL "https://pkgs.k8s.io/core:/stable:/v${K8S_MINOR}/deb/Release.key" \
-  | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+# --batch --yes: without it, gpg interactively prompts "Overwrite?" on any re-run where the
+# keyring file already exists — which silently eats whatever shell input comes next instead of
+# just overwriting, a nasty one to debug from a pasted multi-line block.
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${K8S_MINOR}/deb/ /" \
   >/etc/apt/sources.list.d/kubernetes.list
 
 apt-get update -qq
-apt-get install -y -qq kubelet kubeadm kubectl
+apt-get install -y -qq kubelet kubeadm kubectl cri-tools
 # Hold them: an unplanned apt upgrade of these packages is how clusters break at 3am.
 apt-mark hold kubelet kubeadm kubectl
 systemctl enable kubelet   # it will crashloop until kubeadm init/join runs — that's expected
