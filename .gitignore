@@ -4,6 +4,9 @@ email.txt
 # Private career-planning artifact — built around one specific job application, kept local only
 docs/gap-analysis.md
 
+# Blog drafts — kept local only, not part of the public repo
+docs/blog-post-*.md
+
 # Cluster-specific artifacts — regenerated per build, not meant to be version controlled
 ca.crt
 *.key
