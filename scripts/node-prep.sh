@@ -81,6 +81,11 @@ echo "== Ready. Versions:"
 kubeadm version -o short
 containerd --version
 echo
+
+# Auto-detected so the node-ip commands below are correct for THIS node, not just copy-pasted
+# boilerplate — matters because getting this wrong silently defeats the whole point of it.
+VLAN_IP="$(ip -4 -o addr show eth1 2>/dev/null | awk '{print $4}' | cut -d/ -f1)"
+
 cat <<EOF
 Next:
   Control plane — bind the API server to the VLAN address, and match the pod CIDR to Calico:
@@ -88,4 +93,22 @@ Next:
 
   Then install Calico, then join the workers with the printed join command.
   Join tokens expire in 24h — regenerate with: kubeadm token create --print-join-command
+
+  IMPORTANT — do this on THIS node right after kubeadm init/join succeeds, not before: kubeadm
+  has no CLI flag to set the kubelet's --node-ip (only a --config file can), and without it,
+  kubelet auto-detects its default-route interface — the PUBLIC one, not the VLAN. That's
+  harmless until a Cloud Firewall is attached (which correctly drops inbound traffic on the
+  public interface), at which point kubectl logs/exec/attach all break, since they connect
+  directly to kubelet rather than through kube-proxy. kubeadm writes kubelet's flags file once
+  during init/join and never touches it again, so editing it AFTER init/join is a durable fix,
+  not a workaround:
 EOF
+if [[ -n "$VLAN_IP" ]]; then
+cat <<EOF
+    sed -i 's|KUBELET_KUBEADM_ARGS=""|KUBELET_KUBEADM_ARGS="--node-ip=${VLAN_IP}"|' /var/lib/kubelet/kubeadm-flags.env
+    systemctl daemon-reload && systemctl restart kubelet
+    # then, from cp1: kubectl get nodes -o wide — confirm INTERNAL-IP shows ${VLAN_IP}, not a public IP
+EOF
+else
+  echo "  (couldn't auto-detect eth1's address — set VLAN_IP by hand and run the same sed/restart above)"
+fi
