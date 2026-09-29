@@ -1,0 +1,52 @@
+# victoria-metrics-k8s-stack, chart 0.95.0 — checked against the chart's own default values.yaml
+# (`helm show values`), not guessed, since the ArtifactHub summary gave wrong key casing
+# (vmSingle.resources) for what's actually vmsingle.spec.resources.
+#
+# Picked over kube-prometheus-stack for this lab specifically to save RAM: the workers have
+# ~1.3GB free each. VictoriaMetrics' storage engine is also NFS-tolerant, unlike Prometheus's
+# TSDB (which explicitly warns against network storage) — that's what makes storageClassName:
+# nfs-client below a reasonable choice rather than a risk.
+alertmanager:
+  enabled: false   # nothing here pages anyone — would only cost memory
+vmalert:
+  enabled: false    # no alertmanager to send to, so no rules to evaluate either
+
+vmsingle:
+  spec:
+    retentionPeriod: "2d"   # lab, not production — short retention keeps the PVC small
+    storage:
+      storageClassName: nfs-client   # explicit: no default StorageClass exists on this cluster,
+                                      # an unset storageClassName would leave the PVC Pending forever
+      resources:
+        requests:
+          storage: 2Gi
+    resources:
+      requests: {cpu: 100m, memory: 150Mi}
+      limits: {memory: 300Mi}
+
+vmagent:
+  spec:
+    resources:
+      requests: {cpu: 50m, memory: 64Mi}
+      limits: {memory: 128Mi}
+
+grafana:
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {memory: 256Mi}
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana.lab.local
+    path: /
+
+kube-state-metrics:
+  resources:
+    requests: {cpu: 10m, memory: 32Mi}
+    limits: {memory: 96Mi}
+
+prometheus-node-exporter:
+  resources:
+    requests: {cpu: 10m, memory: 16Mi}
+    limits: {memory: 48Mi}

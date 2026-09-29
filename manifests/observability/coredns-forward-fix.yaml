@@ -1,0 +1,39 @@
+# Fixes a classic systemd-resolved + CoreDNS gotcha: CoreDNS runs with dnsPolicy: Default,
+# inheriting the node's /etc/resolv.conf CONTENT ("nameserver 127.0.0.53" — systemd-resolved's
+# loopback stub). That address is meaningless inside CoreDNS's own network namespace, so every
+# external (non-cluster) DNS lookup CoreDNS forwards times out — internal cluster DNS is
+# unaffected since the `kubernetes` plugin answers those directly, never touching `forward`.
+# Discovered 2026-09-29: nothing before this needed a pod to resolve an external hostname.
+#
+# Fix: forward to Akamai/Linode's real upstream resolvers directly (from
+# /run/systemd/resolve/resolv.conf on the host) instead of the stub.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . 139.144.192.61 139.144.192.60 139.144.192.62 {
+           max_concurrent 1000
+        }
+        cache 30 {
+           disable success cluster.local
+           disable denial cluster.local
+        }
+        loop
+        reload
+        loadbalance
+    }

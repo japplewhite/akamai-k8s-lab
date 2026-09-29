@@ -1,0 +1,33 @@
+# Same image/config/serviceaccount as the chart's post-install sync-job hook, run as a plain
+# Pod instead of a Job so it doesn't self-delete on failure — the Job's backoffLimit + TTL kept
+# cleaning up the pod before its logs could be read. Debugging aid only, not part of the chart.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sync-job-debug
+  namespace: observability
+spec:
+  restartPolicy: Never
+  serviceAccountName: vm-victoria-metrics-k8s-stack-sync-job
+  containers:
+    - name: sync-job
+      image: ghcr.io/victoriametrics/sync-job:v0.0.17
+      env:
+        - name: NAMESPACE
+          value: observability
+        - name: RELEASE
+          value: vm
+        - name: RESOURCE_PREFIX
+          value: vm-victoria-metrics-k8s-stack
+        - name: PRUNE
+          value: "true"
+        - name: OWNER_REFERENCES
+          value: "true"
+      volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+  volumes:
+    - name: config
+      configMap:
+        name: vm-victoria-metrics-k8s-stack-sync-job-config
